@@ -1,1 +1,26 @@
+<script src="js/processing-1.4.8.min.js"></script>
+<script type="text/processing" data-processing-target="processing-canvas">
+size(400,400);
+background(162, 219, 187);
+stroke(255, 0, 0);
+strokeWeight(2);
+for(var i = 0; i < 20; i++) {
+    line(0, i * 40, 400, i * 40);
+    line(i * 40, 0, i * 40, 400);
+}
 
+var count = 0;
+mouseClicked = function() {
+    var x = round(mouseX / 40) * 40 - 20;
+    var y = round(mouseY / 40) * 40 - 20;
+    
+    if(count % 2 === 0) {
+        fill(0);
+    } else {
+        fill(255);
+    }
+    ellipse(x, y, 40, 40);
+    count++;
+};
+</script>
+<canvas id="processing-canvas"></canvas>
