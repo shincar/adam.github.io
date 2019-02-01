@@ -1,2 +1,2 @@
-# shincar.github.io
-This is a temp website to investigate possibility to host web pages publicly.
+# adam.github.io
+I plan to start developing some games with ProcessingJS. Let's see how far I can go.
