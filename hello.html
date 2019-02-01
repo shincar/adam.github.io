@@ -1,17 +1,18 @@
 <script src="js/processing.min.js"></script>
 <script type="text/processing" data-processing-target="processing-canvas">
 
-size(document.body.clientWidth, document.body.clientHeight);
-background(162, 219, 187);
-stroke(255, 0, 0);
-strokeWeight(2);
-for(var i = 0; i < 20; i++) {
-    line(0, i * 40, document.body.clientWidth, i * 40);
-    line(i * 40, 0, i * 40, document.body.clientHeight);
-}
-
+var drawBackground = function() {
+    size(document.body.clientWidth, document.body.clientHeight);
+    background(162, 219, 187);
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    for(var i = 0; i < 20; i++) {
+        line(0, i * 40, document.body.clientWidth, i * 40);
+        line(i * 40, 0, i * 40, document.body.clientHeight);
+    }
+};
 draw = function() {
-    background(100);
+    drawBackground();
     
     ellipse(mouseX, mouseY, 25, 25);
 };
