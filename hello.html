@@ -1,2 +1,11 @@
 <script src="js/processing.min.js"></script>
-<canvas data-processing-source="hello.pde"></canvas>
+<script type="text/processing" data-processing-target="processing-canvas">
+void setup() {
+    size(200, 200);
+    background(100);
+    stroke(255);
+    ellipse(50, 50, 25, 25);
+    println('hello web!');
+}
+</script>
+<canvas id="processing-canvas"></canvas>
