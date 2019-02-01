@@ -1,26 +1,46 @@
-<script src="js/processing-1.4.8.min.js"></script>
-<script type="text/processing" data-processing-target="processing-canvas">
-size(400,400);
-background(162, 219, 187);
-stroke(255, 0, 0);
-strokeWeight(2);
-for(var i = 0; i < 20; i++) {
-    line(0, i * 40, 400, i * 40);
-    line(i * 40, 0, i * 40, 400);
-}
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Adam & Alvin's Lab - ClickGame</title>
+  <script src="js/processing-1.4.8.min.js"></script>
+  <script type="text/processing" data-processing-target="processing-canvas">
+  var gridSize = 45;
+  var gridCount = 10;
+  var paddingOfBoard = 25;
+  var maxSize = gridSize * gridCount + paddingOfBoard * 2;
+  var tokenSize = 35;
+  
+  size(maxSize,maxSize);
+  background(214, 179, 117);
+  stroke(0);
+  strokeWeight(2);
+  for(var i = 0; i <= gridCount; i++) {
+      line(paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard, i * gridSize + paddingOfBoard);
+      line(i * gridSize + paddingOfBoard, paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard);
+  }
 
-var count = 0;
-mouseClicked = function() {
-    var x = round(mouseX / 40) * 40;
-    var y = round(mouseY / 40) * 40;
-    noStroke();
-    if(count % 2 === 0) {
-        fill(0);
-    } else {
-        fill(255);
+  var count = 0;
+  mouseClicked = function() {
+      var x = round((mouseX-paddingOfBoard) / gridSize) * gridSize + paddingOfBoard;
+      var y = round((mouseY-paddingOfBoard) / gridSize) * gridSize + paddingOfBoard;
+      noStroke();
+      if(count % 2 === 0) {
+          fill(0);
+      } else {
+          fill(255);
+      }
+      ellipse(x, y , tokenSize, tokenSize);
+      count++;
+  };
+  </script>
+  <style>
+    body {
+      padding-left: 10px;
     }
-    ellipse(x, y, 40, 40);
-    count++;
-};
-</script>
-<canvas id="processing-canvas"></canvas>
+  </style>
+  </head>
+  <body>
+  <h1>Click Game</h1>
+  <canvas id="processing-canvas"></canvas>
+  </body>
+</html>
