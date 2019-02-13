@@ -32,7 +32,7 @@
     this.color = color;
     this.small_tokens = [new Token(TOKEN_SIZE_SMALL, color), new Token(TOKEN_SIZE_SMALL, color)];
     this.medium_tokens = [new Token(TOKEN_SIZE_MEDIUM, color), new Token(TOKEN_SIZE_MEDIUM, color)];
-    this.large_tokens = [new Token(TOKEN_SIZE_LARGE, color, new Token(TOKEN_SIZE_LARGE, color)];
+    this.large_tokens = [new Token(TOKEN_SIZE_LARGE, color), new Token(TOKEN_SIZE_LARGE, color)];
   }
   
   var GridControl = function(x, y) {
@@ -63,11 +63,19 @@
       text("Start", maxSize / 2, gridSize * 2 + paddingOfBoard);
   }
   
+  var resetGameData = function() {
+    stepCounter = 0;
+    
+    // Put all players token back to their pocket
+  }
+  
   var processHomeScene = function() {
       if(gameScene != GAME_SCENE_HOME) return;
       
       if(mouseX > (maxSize - gridSize) / 2 && mouseX < (maxSize - gridSize) / 2 + gridSize &&
          mouseY > gridSize * 2 + paddingOfBoard && mouseY < gridSize * 2.3 + paddingOfBoard) { 
+          resetGameData();
+          
           gameScene = GAME_SCENE_PLAYGROUND;
           drawPlaygroundScene();
       }
@@ -82,29 +90,24 @@
           line(i * gridSize + paddingOfBoard, paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard);
       }
       
-      var bChangePlayer = false;
-      var currentPlayer = players[stepCounter%2];
+      var currentPlayer = players[stepCounter % 2];
       stroke(currentPlayer.color);
       textSize(24);
-      text(currentPlayer.name, 10, 10);
+      text(currentPlayer.name, 50, 10);
+      
   }
   
   var processPlaygroundScene = function() {
       if(gameScene != GAME_SCENE_PLAYGROUND) return;
       
       drawPlaygroundScene();
-      // Do something here to check if it's a valid move
-      bChangePlayer = true;
       
-      if(changePlayer = true)
-        stepCounter++;
+      stepCounter++;
       
-      
-      /*
-      gameScene = GAME_SCENE_HOME;
-      
-      drawHomeScene();
-      */
+      if(stepCounter > 4) {
+          gameScene = GAME_SCENE_HOME;
+          drawHomeScene();
+      }
   }
 
   var gameScene = GAME_SCENE_HOME;
