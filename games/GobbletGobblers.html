@@ -17,7 +17,6 @@
   var gridCount = 3;
   var paddingOfBoard = 100;
   var maxSize = gridSize * gridCount + paddingOfBoard * 2;
-  var tokenSize = 35;
   
   size(maxSize,maxSize);
   
@@ -91,10 +90,30 @@
       }
       
       var currentPlayer = players[stepCounter % 2];
+      fill(currentPlayer.color);
       stroke(currentPlayer.color);
       textSize(24);
       text(currentPlayer.name, 50, 10);
       
+      var token_size = TOKEN_SIZE_SMALL / 3;
+      var token_adjust = 0;
+      for(var i = 0; i < currentPlayer.small_tokens.length; i++) {
+        ellipse(150, 80 - i * (token_size + 10) , token_size, token_size);
+      }
+      
+      token_size = TOKEN_SIZE_MEDIUM / 3;
+      token_adjust = (TOKEN_SIZE_MEDIUM - TOKEN_SIZE_SMALL) / 6;
+      for(var i = 0; i < currentPlayer.medium_tokens.length; i++) {
+        ellipse(185, 80 - i * (token_size + 10) - token_adjust, token_size, token_size);
+      }
+      
+      token_size = TOKEN_SIZE_LARGE / 3;
+      token_adjust = (TOKEN_SIZE_LARGE - TOKEN_SIZE_SMALL) / 6;
+      for(var i = 0; i < currentPlayer.large_tokens.length; i++) {
+        ellipse(230, 80 - i * (token_size + 10) - token_adjust, token_size, token_size);
+      }
+      
+      line(80, 90, 580, 90);
   }
   
   var processPlaygroundScene = function() {
