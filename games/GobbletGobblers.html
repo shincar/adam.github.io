@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Adam & Alvin's Lab - Gobblet Gobblers</title>
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+  <script src="js/processing-1.4.8.min.js"></script>
+  <script type="text/processing" data-processing-target="processing-canvas">
+  const GAME_SCENE_HOME = 0;
+  const GAME_SCENE_PLAYGROUND = 1;
+  const GAME_SCENE_END = 2;
+  
+  const TOKEN_SIZE_SMALL = 30;
+  const TOKEN_SIZE_MEDIUM = 60;
+  const TOKEN_SIZE_LARGE = 90;
+  
+  var gridSize = 150;
+  var gridCount = 3;
+  var paddingOfBoard = 100;
+  var maxSize = gridSize * gridCount + paddingOfBoard * 2;
+  var tokenSize = 35;
+  
+  size(maxSize,maxSize);
+  
+  var Token = function(size, color) {
+    this.size = size;
+    this.color = color;
+    this.selected = false;
+  }
+  
+  var Player = function(name, color) {
+    this.name = name;
+    this.color = color;
+    this.small_tokens = [new Token(TOKEN_SIZE_SMALL, color), new Token(TOKEN_SIZE_SMALL, color)];
+    this.medium_tokens = [new Token(TOKEN_SIZE_MEDIUM, color), new Token(TOKEN_SIZE_MEDIUM, color)];
+    this.large_tokens = [new Token(TOKEN_SIZE_LARGE, color, new Token(TOKEN_SIZE_LARGE, color)];
+  }
+  
+  var GridControl = function(x, y) {
+        this.x = x;
+        this.y = y;
+        this.tokenList = [];
+  }
+  
+  var player1 = new Player("Player 1", color(213,251,209));
+  var player2 = new Player("Player 2", color(58,121,52));
+  
+  var stepCounter = 0;
+  var players = [player1, player2];
+  
+  var drawHomeScene = function() {
+      background(58,121,52);
+      textSize(60);
+      textAlign(CENTER,CENTER);
+      text("Gobblet Gobblers", 0, 0, maxSize, maxSize * 0.66); 
+      
+      fill(93,194,83);
+      stroke(213,251,209);
+      strokeWeight(5);
+      rect((maxSize - gridSize) / 2 , gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
+      textSize(36);
+      fill(213,251,209);
+      textAlign(CENTER,TOP);
+      text("Start", maxSize / 2, gridSize * 2 + paddingOfBoard);
+  }
+  
+  var processHomeScene = function() {
+      if(gameScene != GAME_SCENE_HOME) return;
+      
+      if(mouseX > (maxSize - gridSize) / 2 && mouseX < (maxSize - gridSize) / 2 + gridSize &&
+         mouseY > gridSize * 2 + paddingOfBoard && mouseY < gridSize * 2.3 + paddingOfBoard) { 
+          gameScene = GAME_SCENE_PLAYGROUND;
+          drawPlaygroundScene();
+      }
+  }
+  
+  var drawPlaygroundScene = function() {
+      background(93,194,83);
+      stroke(213,251,209);
+      strokeWeight(5);
+      for(var i = 0; i <= gridCount; i++) {
+          line(paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard, i * gridSize + paddingOfBoard);
+          line(i * gridSize + paddingOfBoard, paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard);
+      }
+      
+      var bChangePlayer = false;
+      var currentPlayer = players[stepCounter%2];
+      stroke(currentPlayer.color);
+      textSize(24);
+      text(currentPlayer.name, 10, 10);
+  }
+  
+  var processPlaygroundScene = function() {
+      if(gameScene != GAME_SCENE_PLAYGROUND) return;
+      
+      drawPlaygroundScene();
+      // Do something here to check if it's a valid move
+      bChangePlayer = true;
+      
+      if(changePlayer = true)
+        stepCounter++;
+      
+      
+      /*
+      gameScene = GAME_SCENE_HOME;
+      
+      drawHomeScene();
+      */
+  }
+
+  var gameScene = GAME_SCENE_HOME;
+  drawHomeScene();
+  
+  mouseClicked = function() {
+  
+    switch (gameScene) {
+        case GAME_SCENE_HOME:
+            processHomeScene();
+            break;
+            
+        case GAME_SCENE_PLAYGROUND:
+            processPlaygroundScene();
+            break;
+        case GAME_SCENE_END:
+            drawHomeScene();
+            break;
+    }
+  }
+  
+  </script>
+  <style>
+    body {
+      padding-left: 10px;
+    }
+  </style>
+  </head>
+  <body>
+  <div id="main">
+    <div id="header">
+		<div id="hdr-overlay"></div>
+		<div id="hdr-box1" class="box"></div>
+		<div id="hdr-box2" class="box"></div>
+		<div id="hdr-box3" class="box"></div>
+		<div id="hdr-box4" class="box"></div>
+		<h1>Adam & Alvin's Fun Lab</h1>
+		<h2>A secret place for fun projects. </h2>
+	</div>
+    <div id="content">
+        <div id="left">
+            <p>
+            <canvas id="processing-canvas"></canvas>
+            </p>
+        </div>
+        <div id="right">
+        </div>
+        
+        <div class="cleaner"></div>
+
+		<div id="footer">
+			Copyright © shincar.github.io 
+		</div>
+    </div>
+  </div>
+  </body>
+</html>
