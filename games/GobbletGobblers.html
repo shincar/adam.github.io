@@ -42,16 +42,6 @@
             if( this.token_list.length > 1 ) {
                 this.token_list[this.token_list.length - 2].visible = false;
             }
-        } else {
-            this.token_list.pop();
-            // if there is other token exist in this grid, let toppest one visible and also set owner to it
-            // otherwise, set owner to 0 means no owner now
-            if( this.token_list.length > 0 ) {
-                this.token_list[this.token_list.length - 1].visible = true;
-                this.owner = this.token_list[this.token_list.length - 1].player_id;
-            } else {
-              this.owner = 0;
-            }
         }
     }
   };
@@ -180,6 +170,7 @@
     this.currentX = 0;
     this.currentY = 0;
     this.currentSize = 0;
+    this.parentGrid;
   };
   
   Token.prototype.setTokenInfo = function(x, y, size) {
@@ -207,16 +198,13 @@
     this.id = id;
     this.name = name;
     this.color = color;
-    this.small_tokens = [new Token(id, TOKEN_SIZE_SMALL, color), new Token(id, TOKEN_SIZE_SMALL, color)];
-    this.medium_tokens = [new Token(id, TOKEN_SIZE_MEDIUM, color), new Token(id, TOKEN_SIZE_MEDIUM, color)];
-    this.large_tokens = [new Token(id, TOKEN_SIZE_LARGE, color), new Token(id, TOKEN_SIZE_LARGE, color)];
+    this.tokens = [new Token(id, TOKEN_SIZE_SMALL, color), new Token(id, TOKEN_SIZE_SMALL, color),
+                   new Token(id, TOKEN_SIZE_MEDIUM, color), new Token(id, TOKEN_SIZE_MEDIUM, color),
+                   new Token(id, TOKEN_SIZE_LARGE, color), new Token(id, TOKEN_SIZE_LARGE, color)];
   };
   
   Player.prototype.reset = function() {
-    var token_list = [];
-    token_list = token_list.concat(this.small_tokens).concat(this.medium_tokens).concat(this.large_tokens);
-    
-    token_list.forEach(function(element) {
+    this.tokens.forEach(function(element) {
         element.selected = false;
         element.used = false;
         element.visible = true;
@@ -230,17 +218,15 @@
     var bAlreadySelectedToken = false;
     var selectedToken;
     
-    var token_list = [];
-    token_list = token_list.concat(this.small_tokens).concat(this.medium_tokens).concat(this.large_tokens);
     // Get MouseX and MouseY and verify if any token is selected
-    for(var i = 0; i < token_list.length; i++) {
-        if(token_list[i].visible && token_list[i].IsContains(x, y)) {
+    for(var i = 0; i < this.tokens.length; i++) {
+        if(this.tokens[i].visible && this.tokens[i].IsContains(x, y)) {
             bFindTokenToSelect = true;
-            clickedToken = token_list[i];
+            clickedToken = this.tokens[i];
         }
-        if(token_list[i].selected) {
+        if(this.tokens[i].selected) {
             bAlreadySelectedToken = true;
-            selectedToken = token_list[i];
+            selectedToken = this.tokens[i];
         }
     }
     
@@ -264,13 +250,30 @@
         playground.gridList.forEach(function(grid) {
             if( grid.IsContains(x, y) && 
                 (grid.token_list.length === 0 || (grid.token_list.length > 0 && grid.token_list[grid.token_list.length - 1].size < selectedToken.size)) ){
-                // move the token to this grid
+                
+                if(!selectedToken.used) {
+                  selectedToken.parentGrid = grid;
+                } else {
+                  selectedToken.parentGrid.token_list.pop();
+                  if(selectedToken.parentGrid.token_list.length > 0) {
+                    selectedToken.parentGrid.token_list[selectedToken.parentGrid.token_list.length - 1].visible = true;
+                    selectedToken.parentGrid.owner = selectedToken.parentGrid.token_list[selectedToken.parentGrid.token_list.length - 1].player_id;
+                  } else {
+                    selectedToken.parentGrid.owner = 0;
+                  }
+                }
+
                 selectedToken.selected = false;
-                selectedToken.used = true;
-                selectedToken.setTokenInfo(grid.x, grid.y, selectedToken.size);
-                grid.token_list.push(selectedToken);
-                grid.owner = selectedToken.player_id;
-                bValidAction = true;
+                selectedToken.used = false;
+                if(!playground.check()) {
+                  // move the token to this grid
+                  selectedToken.used = true;
+                  selectedToken.setTokenInfo(grid.x, grid.y, selectedToken.size);
+                  grid.token_list.push(selectedToken);
+                  grid.owner = selectedToken.player_id;
+                  selectedToken.parentGrid = grid;
+                  bValidAction = true;
+                }
             }
         });
         
@@ -288,8 +291,6 @@
     
     return bValidAction;
   };
-  
-  
   
   var player1 = new Player(1, "Player 1", color(213,251,209));
   var player2 = new Player(2, "Player 2", color(58,121,52));
@@ -356,12 +357,10 @@
       
       // Draw player token here
       var token_adjust = 0;
-      var player_tokens = [];
-      var current_token_x = 150 - TOKEN_SIZE_SMALL / 2;
+      var current_token_x = 150 - currentPlayer.tokens[0].size / 2;
       var current_token_y = 50;
-      player_tokens = player_tokens.concat(currentPlayer.small_tokens).concat(currentPlayer.medium_tokens).concat(currentPlayer.large_tokens);
-
-      player_tokens.forEach(function(token) {
+      
+      currentPlayer.tokens.forEach(function(token) {
           if(!token.used) {
             current_token_x = current_token_x + token.size / 2;
             token.setTokenInfo(current_token_x, current_token_y, token.size);
@@ -372,8 +371,9 @@
 
       // Draw the lastest token in the grid here
       playground.gridList.forEach(function(grid) {
-        if(grid.token_list.length > 0)
+        if(grid.token_list.length > 0) {
             grid.token_list[grid.token_list.length - 1].draw();
+        }
       });
 
       if(playground.winner != 0) {
