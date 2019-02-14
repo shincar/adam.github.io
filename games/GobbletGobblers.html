@@ -12,7 +12,7 @@
   const TOKEN_SIZE_SMALL = 30;
   const TOKEN_SIZE_MEDIUM = 60;
   const TOKEN_SIZE_LARGE = 90;
-  
+    
   var gridSize = 150;
   var gridCount = 3;
   var paddingOfBoard = 100;
@@ -20,11 +20,80 @@
   
   size(maxSize,maxSize);
   
+  var Grid = function(x, y, size) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.token_list = [];
+  };
+  
+  Grid.prototype.IsContains = function(x, y) {
+    return ( x > (this.x - this.size / 2) && x < (this.x + this.size / 2) && (y > this.y - this.size / 2) && (y < this.y + this.size / 2));
+  };
+  
+  Grid.prototype.CleanUp = function(selectedToken) {
+    if(this.token_list.length === 0) return;
+    
+    // if the last token in token_list is equal to selectedToken we have something to do
+    var lastToken = this.token_list.slice(-1)[0];
+    if(lastToken == selectedToken) {
+        if( selectedToken.currentX === this.x && selectedToken.currentY === this.y ) {
+            if( this.token_list.length > 1 ) {
+                this.token_list[this.token_list.length - 2].visible = false;
+            }
+        } else {
+            this.token_list.pop();
+            if( this.token_list.length > 0 ) {
+                this.token_list[this.token_list.length - 1].visible = true;
+            }
+        }
+    }
+  };
+  
+  var PlayGround = function() {
+    this.grid_count = gridCount * gridCount;
+    this.grid_size = gridSize;
+    this.padding = paddingOfBoard;
+    this.gridList = [];
+    
+    for(var i = 0; i < gridCount; i++) {
+        for(var j = 0; j < gridCount; j++) {
+            this.gridList.push(new Grid(this.padding + (i + 0.5) * this.grid_size, this.padding + (j + 0.5) * this.grid_size, this.grid_size));
+        }
+    }
+  };
+  
   var Token = function(size, color) {
     this.size = size;
     this.color = color;
     this.selected = false;
-  }
+    this.used = false;
+    this.visible = true;
+    this.currentX = 0;
+    this.currentY = 0;
+    this.currentSize = 0;
+  };
+  
+  Token.prototype.setTokenInfo = function(x, y, size) {
+    this.currentX = x;
+    this.currentY = y;
+    this.currentSize = size;
+  };
+  
+  Token.prototype.draw = function(x, y, size) {
+    if(this.selected) {
+        stroke(244,0,0);
+        strokeWeight(2);
+    } else {
+        noStroke();
+    }
+    fill(this.color);
+    ellipse(this.currentX, this.currentY, this.currentSize, this.currentSize);
+  };
+  
+  Token.prototype.IsContains = function(x, y) {
+    return (Math.pow(x - this.currentX, 2) + Math.pow(y - this.currentY, 2)) < Math.pow(this.currentSize / 2, 2);
+  };
   
   var Player = function(name, color) {
     this.name = name;
@@ -32,16 +101,90 @@
     this.small_tokens = [new Token(TOKEN_SIZE_SMALL, color), new Token(TOKEN_SIZE_SMALL, color)];
     this.medium_tokens = [new Token(TOKEN_SIZE_MEDIUM, color), new Token(TOKEN_SIZE_MEDIUM, color)];
     this.large_tokens = [new Token(TOKEN_SIZE_LARGE, color), new Token(TOKEN_SIZE_LARGE, color)];
-  }
+  };
   
-  var GridControl = function(x, y) {
-        this.x = x;
-        this.y = y;
-        this.tokenList = [];
-  }
+  Player.prototype.reset = function() {
+    var token_list = [];
+    token_list = token_list.concat(this.small_tokens).concat(this.medium_tokens).concat(this.large_tokens);
+    
+    token_list.forEach(function(element) {
+        element.selected = false;
+        element.used = false;
+        element.visible = true;
+    });
+  };
+  
+  Player.prototype.DoClickAction = function(x, y) {
+    var bFindTokenToSelect = false;
+    var bValidAction = false;
+    var clickedToken;
+    var bAlreadySelectedToken = false;
+    var selectedToken;
+    
+    var token_list = [];
+    token_list = token_list.concat(this.small_tokens).concat(this.medium_tokens).concat(this.large_tokens);
+    // Get MouseX and MouseY and verify if any token is selected
+    for(var i = 0; i < token_list.length; i++) {
+        if(token_list[i].visible && token_list[i].IsContains(x, y)) {
+            bFindTokenToSelect = true;
+            clickedToken = token_list[i];
+        }
+        if(token_list[i].selected) {
+            bAlreadySelectedToken = true;
+            selectedToken = token_list[i];
+        }
+    }
+    
+    // If user click on a token, that means either he want to select or unselect a token
+    if(bFindTokenToSelect) {
+        if(clickedToken.selected) {
+            clickedToken.selected = false;
+            bAlreadySelectedToken = false;
+        } else {
+            // if the token was not clicked, we should unselect previous selected token first
+            if(bAlreadySelectedToken)
+                selectedToken.selected = false;
+            clickedToken.selected = true;
+        }
+    }
+    // otherwise, user may try to click on the grid that he want to do a real move
+    else if(bAlreadySelectedToken)
+    {
+        // if x and y fall into any grid range, and there is no token equal and bigger to this one,
+        // we move the token user selected to this grid
+        playground.gridList.forEach(function(grid) {
+            if( grid.IsContains(x, y) && 
+                (grid.token_list.length === 0 || (grid.token_list.length > 0 && grid.token_list[grid.token_list.length - 1].size < selectedToken.size)) ){
+                console.log("Valid action");
+                // move the token to this grid
+                selectedToken.selected = false;
+                selectedToken.used = true;
+                selectedToken.setTokenInfo(grid.x, grid.y, selectedToken.size);
+                grid.token_list.push(selectedToken);
+                bValidAction = true;
+            }
+        });
+        
+        // After we decide if a token was moved, we need to clean up token_list in gridList
+        playground.gridList.forEach(function(grid) {
+            grid.CleanUp(selectedToken);
+        });
+        
+    }
+    // if there is no token selected before and user does not click any token, we do nothing
+    else
+    {
+        // do nothing here for now
+    }
+    
+    return bValidAction;
+  };
+  
+  
   
   var player1 = new Player("Player 1", color(213,251,209));
   var player2 = new Player("Player 2", color(58,121,52));
+  var playground = new PlayGround();
   
   var stepCounter = 0;
   var players = [player1, player2];
@@ -66,6 +209,10 @@
     stepCounter = 0;
     
     // Put all players token back to their pocket
+    player1.reset();
+    player2.reset();
+    
+    
   }
   
   var processHomeScene = function() {
@@ -92,41 +239,59 @@
       var currentPlayer = players[stepCounter % 2];
       fill(currentPlayer.color);
       stroke(currentPlayer.color);
+      strokeWeight(5);
       textSize(24);
       text(currentPlayer.name, 50, 10);
       
-      var token_size = TOKEN_SIZE_SMALL / 3;
+      // Draw player token here
       var token_adjust = 0;
       for(var i = 0; i < currentPlayer.small_tokens.length; i++) {
-        ellipse(150, 80 - i * (token_size + 10) , token_size, token_size);
+        if(!currentPlayer.small_tokens[i].used) {
+            currentPlayer.small_tokens[i].setTokenInfo(150, 80 - i * (TOKEN_SIZE_SMALL / 3 + 10), TOKEN_SIZE_SMALL / 3);
+            currentPlayer.small_tokens[i].draw();
+        }
       }
       
-      token_size = TOKEN_SIZE_MEDIUM / 3;
       token_adjust = (TOKEN_SIZE_MEDIUM - TOKEN_SIZE_SMALL) / 6;
       for(var i = 0; i < currentPlayer.medium_tokens.length; i++) {
-        ellipse(185, 80 - i * (token_size + 10) - token_adjust, token_size, token_size);
+        if(!currentPlayer.medium_tokens[i].used) {
+            currentPlayer.medium_tokens[i].setTokenInfo(185, 80 - i * (TOKEN_SIZE_MEDIUM / 3 + 10) - token_adjust, TOKEN_SIZE_MEDIUM / 3);
+            currentPlayer.medium_tokens[i].draw();
+        }
       }
       
-      token_size = TOKEN_SIZE_LARGE / 3;
       token_adjust = (TOKEN_SIZE_LARGE - TOKEN_SIZE_SMALL) / 6;
       for(var i = 0; i < currentPlayer.large_tokens.length; i++) {
-        ellipse(230, 80 - i * (token_size + 10) - token_adjust, token_size, token_size);
+        if(!currentPlayer.large_tokens[i].used) {
+            currentPlayer.large_tokens[i].setTokenInfo(230, 80 - i * (TOKEN_SIZE_LARGE / 3 + 10) - token_adjust, TOKEN_SIZE_LARGE / 3);
+            currentPlayer.large_tokens[i].draw();
+        }
       }
       
+      // Draw the lastest token in the grid here
+      playground.gridList.forEach(function(grid) {
+        if(grid.token_list.length > 0)
+            grid.token_list[grid.token_list.length - 1].draw();
+      });
+      
+      stroke(currentPlayer.color);
+      strokeWeight(5);
       line(80, 90, 580, 90);
   }
   
   var processPlaygroundScene = function() {
       if(gameScene != GAME_SCENE_PLAYGROUND) return;
       
+      var currentPlayer = players[stepCounter % 2];
+      if(currentPlayer.DoClickAction(mouseX, mouseY)) {
+        stepCounter++;
+      }
       drawPlaygroundScene();
-      
-      stepCounter++;
-      
+      /*      
       if(stepCounter > 4) {
           gameScene = GAME_SCENE_HOME;
           drawHomeScene();
-      }
+      }*/
   }
 
   var gameScene = GAME_SCENE_HOME;
