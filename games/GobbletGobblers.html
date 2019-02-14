@@ -9,9 +9,9 @@
   const GAME_SCENE_PLAYGROUND = 1;
   const GAME_SCENE_END = 2;
   
-  const TOKEN_SIZE_SMALL = 30;
+  const TOKEN_SIZE_SMALL = 35;
   const TOKEN_SIZE_MEDIUM = 60;
-  const TOKEN_SIZE_LARGE = 90;
+  const TOKEN_SIZE_LARGE = 85;
     
   var gridSize = 150;
   var gridCount = 3;
@@ -245,38 +245,26 @@
       
       // Draw player token here
       var token_adjust = 0;
-      for(var i = 0; i < currentPlayer.small_tokens.length; i++) {
-        if(!currentPlayer.small_tokens[i].used) {
-            currentPlayer.small_tokens[i].setTokenInfo(150, 80 - i * (TOKEN_SIZE_SMALL / 3 + 10), TOKEN_SIZE_SMALL / 3);
-            currentPlayer.small_tokens[i].draw();
-        }
-      }
-      
-      token_adjust = (TOKEN_SIZE_MEDIUM - TOKEN_SIZE_SMALL) / 6;
-      for(var i = 0; i < currentPlayer.medium_tokens.length; i++) {
-        if(!currentPlayer.medium_tokens[i].used) {
-            currentPlayer.medium_tokens[i].setTokenInfo(185, 80 - i * (TOKEN_SIZE_MEDIUM / 3 + 10) - token_adjust, TOKEN_SIZE_MEDIUM / 3);
-            currentPlayer.medium_tokens[i].draw();
-        }
-      }
-      
-      token_adjust = (TOKEN_SIZE_LARGE - TOKEN_SIZE_SMALL) / 6;
-      for(var i = 0; i < currentPlayer.large_tokens.length; i++) {
-        if(!currentPlayer.large_tokens[i].used) {
-            currentPlayer.large_tokens[i].setTokenInfo(230, 80 - i * (TOKEN_SIZE_LARGE / 3 + 10) - token_adjust, TOKEN_SIZE_LARGE / 3);
-            currentPlayer.large_tokens[i].draw();
-        }
-      }
-      
+      var player_tokens = [];
+      player_tokens = player_tokens.concat(currentPlayer.small_tokens).concat(currentPlayer.medium_tokens).concat(currentPlayer.large_tokens);
+      var current_token_x = 150 - TOKEN_SIZE_SMALL / 2;
+      var current_token_y = 50;
+
+      player_tokens.forEach(function(token) {
+          if(!token.used) {
+            current_token_x = current_token_x + token.size / 2;
+            token.setTokenInfo(current_token_x, current_token_y, token.size);
+            token.draw();
+            current_token_x = current_token_x + token.size / 2 +  10;
+          }
+      });
+
       // Draw the lastest token in the grid here
       playground.gridList.forEach(function(grid) {
         if(grid.token_list.length > 0)
             grid.token_list[grid.token_list.length - 1].draw();
       });
       
-      stroke(currentPlayer.color);
-      strokeWeight(5);
-      line(80, 90, 580, 90);
   }
   
   var processPlaygroundScene = function() {
