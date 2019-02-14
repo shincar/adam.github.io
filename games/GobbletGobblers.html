@@ -25,6 +25,7 @@
         this.y = y;
         this.size = size;
         this.token_list = [];
+        this.owner = 0;
   };
   
   Grid.prototype.IsContains = function(x, y) {
@@ -43,8 +44,13 @@
             }
         } else {
             this.token_list.pop();
+            // if there is other token exist in this grid, let toppest one visible and also set owner to it
+            // otherwise, set owner to 0 means no owner now
             if( this.token_list.length > 0 ) {
                 this.token_list[this.token_list.length - 1].visible = true;
+                this.owner = this.token_list[this.token_list.length - 1].player_id;
+            } else {
+              this.owner = 0;
             }
         }
     }
@@ -55,15 +61,117 @@
     this.grid_size = gridSize;
     this.padding = paddingOfBoard;
     this.gridList = [];
+    this.lines = [];
+    this.winner = 0;
     
-    for(var i = 0; i < gridCount; i++) {
-        for(var j = 0; j < gridCount; j++) {
-            this.gridList.push(new Grid(this.padding + (i + 0.5) * this.grid_size, this.padding + (j + 0.5) * this.grid_size, this.grid_size));
+    for(var row = 0; row < gridCount; row++) {
+        for(var col = 0; col < gridCount; col++) {
+            this.gridList.push(new Grid(this.padding + (col + 0.5) * this.grid_size, this.padding + (row + 0.5) * this.grid_size, this.grid_size));
         }
     }
   };
+
+  PlayGround.prototype.reset = function() {
+    this.gridList.forEach(function(grid) {
+        grid.token_list = [];
+        grid.owner = 0;
+    });
+    this.lines = [];
+    this.winner = 0;
+  };
+
+  PlayGround.prototype.check = function() {
+    if( this.lines.length > 0 ) return true;
+    var bFound = false;
+
+    // check horizontal line
+    for(var row = 0; row < gridCount; row++) {
+      bFound = true;
+
+      if( this.gridList[row * gridCount].owner === 0 ) {
+        bFound = false;
+        continue;
+      } else {
+        for(var col = 0; col < gridCount - 1; col++) {
+          bFound = this.gridList[row * gridCount].owner === this.gridList[row * gridCount + col + 1].owner;
+          if(!bFound) {
+            break;
+          }
+        }
+      }
+      if(bFound) {
+        console.log("Found Winner: " + this.gridList[row * gridCount].owner);
+        this.lines.push(this.gridList[row * gridCount]);
+        this.lines.push(this.gridList[(row + 1) * gridCount - 1]);
+        break;
+      }
+    }
+
+    // check vertical line
+    for(var col = 0; col < gridCount; col++) {
+      bFound = true;
+      
+      if( this.gridList[col].owner === 0 ) {
+        bFound = false;
+        continue;
+      } else {
+        for(var row = 0; row < gridCount - 1; row++) {
+          bFound = this.gridList[col].owner === this.gridList[(row + 1) * gridCount + col].owner;
+          if(!bFound) {
+            break;
+          }
+        }
+      }
+      if(bFound) {
+        console.log("Found Vertical Winner: " + this.gridList[col].owner);
+        this.lines.push(this.gridList[col]);
+        this.lines.push(this.gridList[col + (gridCount - 1) * gridCount]);
+        break;
+      }
+    }
+
+    // check cross line 1
+    if( this.gridList[0].owner != 0 ) {
+      bFound = true;
+      for(var i = 0; i < gridCount-1; i++) {
+        bFound = this.gridList[0].owner === this.gridList[(i + 1) * gridCount + (i + 1)].owner;
+
+        if(!bFound) {
+          break;
+        }
+      }
+      if(bFound) {
+        console.log("Found cross line 1 Winner: " + this.gridList[0].owner);
+        this.lines.push(this.gridList[0]);
+        this.lines.push(this.gridList[this.gridList.length-1]);
+      }
+    }
+
+    // check cross line 2
+    if( this.gridList[gridCount-1].owner != 0) {
+      bFound = true;
+      for(var i = 0; i < gridCount-1; i++) {
+        bFound = this.gridList[gridCount-1].owner === this.gridList[(i+2)*(gridCount-1)].owner;
+
+        if(!bFound) {
+          break;
+        }
+      }
+      if(bFound) {
+        console.log("Found cross line 2 Winner: " + this.gridList[gridCount-1].owner);
+        this.lines.push(this.gridList[gridCount-1]);
+        this.lines.push(this.gridList[(gridCount-1) * gridCount]);
+      }
+    }
+    if(this.lines.length > 0) {
+      this.winner = this.lines[0].owner;
+    }
+
+    return (this.lines.length > 0);
+  };
   
-  var Token = function(size, color) {
+  var Token = function(id, size, color) {
+    this.player_id = id;
     this.size = size;
     this.color = color;
     this.selected = false;
@@ -95,12 +203,13 @@
     return (Math.pow(x - this.currentX, 2) + Math.pow(y - this.currentY, 2)) < Math.pow(this.currentSize / 2, 2);
   };
   
-  var Player = function(name, color) {
+  var Player = function(id, name, color) {
+    this.id = id;
     this.name = name;
     this.color = color;
-    this.small_tokens = [new Token(TOKEN_SIZE_SMALL, color), new Token(TOKEN_SIZE_SMALL, color)];
-    this.medium_tokens = [new Token(TOKEN_SIZE_MEDIUM, color), new Token(TOKEN_SIZE_MEDIUM, color)];
-    this.large_tokens = [new Token(TOKEN_SIZE_LARGE, color), new Token(TOKEN_SIZE_LARGE, color)];
+    this.small_tokens = [new Token(id, TOKEN_SIZE_SMALL, color), new Token(id, TOKEN_SIZE_SMALL, color)];
+    this.medium_tokens = [new Token(id, TOKEN_SIZE_MEDIUM, color), new Token(id, TOKEN_SIZE_MEDIUM, color)];
+    this.large_tokens = [new Token(id, TOKEN_SIZE_LARGE, color), new Token(id, TOKEN_SIZE_LARGE, color)];
   };
   
   Player.prototype.reset = function() {
@@ -155,12 +264,12 @@
         playground.gridList.forEach(function(grid) {
             if( grid.IsContains(x, y) && 
                 (grid.token_list.length === 0 || (grid.token_list.length > 0 && grid.token_list[grid.token_list.length - 1].size < selectedToken.size)) ){
-                console.log("Valid action");
                 // move the token to this grid
                 selectedToken.selected = false;
                 selectedToken.used = true;
                 selectedToken.setTokenInfo(grid.x, grid.y, selectedToken.size);
                 grid.token_list.push(selectedToken);
+                grid.owner = selectedToken.player_id;
                 bValidAction = true;
             }
         });
@@ -182,8 +291,8 @@
   
   
   
-  var player1 = new Player("Player 1", color(213,251,209));
-  var player2 = new Player("Player 2", color(58,121,52));
+  var player1 = new Player(1, "Player 1", color(213,251,209));
+  var player2 = new Player(2, "Player 2", color(58,121,52));
   var playground = new PlayGround();
   
   var stepCounter = 0;
@@ -191,10 +300,12 @@
   
   var drawHomeScene = function() {
       background(58,121,52);
+      fill(213,251,209);
       textSize(60);
       textAlign(CENTER,CENTER);
       text("Gobblet Gobblers", 0, 0, maxSize, maxSize * 0.66); 
       
+      // Draw start button
       fill(93,194,83);
       stroke(213,251,209);
       strokeWeight(5);
@@ -203,7 +314,7 @@
       fill(213,251,209);
       textAlign(CENTER,TOP);
       text("Start", maxSize / 2, gridSize * 2 + paddingOfBoard);
-  }
+  };
   
   var resetGameData = function() {
     stepCounter = 0;
@@ -212,8 +323,8 @@
     player1.reset();
     player2.reset();
     
-    
-  }
+    playground.reset(); 
+  };
   
   var processHomeScene = function() {
       if(gameScene != GAME_SCENE_HOME) return;
@@ -225,7 +336,7 @@
           gameScene = GAME_SCENE_PLAYGROUND;
           drawPlaygroundScene();
       }
-  }
+  };
   
   var drawPlaygroundScene = function() {
       background(93,194,83);
@@ -246,9 +357,9 @@
       // Draw player token here
       var token_adjust = 0;
       var player_tokens = [];
-      player_tokens = player_tokens.concat(currentPlayer.small_tokens).concat(currentPlayer.medium_tokens).concat(currentPlayer.large_tokens);
       var current_token_x = 150 - TOKEN_SIZE_SMALL / 2;
       var current_token_y = 50;
+      player_tokens = player_tokens.concat(currentPlayer.small_tokens).concat(currentPlayer.medium_tokens).concat(currentPlayer.large_tokens);
 
       player_tokens.forEach(function(token) {
           if(!token.used) {
@@ -264,8 +375,18 @@
         if(grid.token_list.length > 0)
             grid.token_list[grid.token_list.length - 1].draw();
       });
-      
-  }
+
+      if(playground.winner != 0) {
+        fill(2, 73, 19);
+        textSize(60);
+        textAlign(CENTER, CENTER);
+        players.forEach(function(player) {
+            if(player.id === playground.winner) {
+              text(player.name + " Wins!", 0, 0, maxSize, maxSize * 0.66);
+            }
+        });
+      }
+  };
   
   var processPlaygroundScene = function() {
       if(gameScene != GAME_SCENE_PLAYGROUND) return;
@@ -274,13 +395,19 @@
       if(currentPlayer.DoClickAction(mouseX, mouseY)) {
         stepCounter++;
       }
+
+      if(playground.check()) {
+        gameScene = GAME_SCENE_END;
+      }
       drawPlaygroundScene();
-      /*      
-      if(stepCounter > 4) {
-          gameScene = GAME_SCENE_HOME;
-          drawHomeScene();
-      }*/
-  }
+  };
+
+  var processEndScene = function() {
+      if(gameScene != GAME_SCENE_END) return;
+
+      gameScene = GAME_SCENE_HOME;
+      drawHomeScene();
+  };
 
   var gameScene = GAME_SCENE_HOME;
   drawHomeScene();
@@ -296,10 +423,10 @@
             processPlaygroundScene();
             break;
         case GAME_SCENE_END:
-            drawHomeScene();
+            processEndScene();
             break;
     }
-  }
+  };
   
   </script>
   <style>
