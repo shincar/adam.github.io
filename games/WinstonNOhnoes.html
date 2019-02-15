@@ -379,7 +379,6 @@
           resetGameData();
           
           gameScene = GAME_SCENE_PLAYGROUND;
-          drawPlaygroundScene();
       }
   };
   
@@ -430,6 +429,16 @@
             }
         });
       }
+      
+      noStroke();
+      fill(93,194,83);
+      rect(0, maxSize - paddingOfBoard + 5, maxSize, maxSize);
+      currentPlayer = players[stepCounter % 2];
+      image(currentPlayer.image, image_left, maxSize - 80, 80, 80);
+      image_left = image_left + image_step;
+      if( (image_left + 80) > maxSize || image_left < 0) {
+          image_step = image_step * (-1);
+      }
   };
   
   var processPlaygroundScene = function() {
@@ -443,21 +452,15 @@
       if(playground.check()) {
         gameScene = GAME_SCENE_END;
       }
-      drawPlaygroundScene();
   };
 
   var processEndScene = function() {
       if(gameScene != GAME_SCENE_END) return;
 
       gameScene = GAME_SCENE_HOME;
-      drawHomeScene();
   };
-
-  var gameScene = GAME_SCENE_HOME;
-  drawHomeScene();
   
   mouseClicked = function() {
-  
     switch (gameScene) {
         case GAME_SCENE_HOME:
             processHomeScene();
@@ -471,22 +474,26 @@
             break;
     }
   };
-  
+
+  var gameScene = GAME_SCENE_HOME;
   var image_left = 0;
-  var image_step = 5;
+  var image_step = 3;
+  
   void draw() {
     switch (gameScene) {
+        case GAME_SCENE_HOME:
+            {
+                drawHomeScene();
+            }
+            break;
         case GAME_SCENE_PLAYGROUND:
             {
-                noStroke();
-                fill(93,194,83);
-                rect(0, maxSize - paddingOfBoard + 5, maxSize, maxSize);
-                currentPlayer = players[stepCounter % 2];
-                image(currentPlayer.image, image_left, maxSize - 80, 80, 80);
-                image_left = image_left + image_step;
-                if( (image_left + 80) > maxSize || image_left < 0) {
-                    image_step = image_step * (-1);
-                }
+                drawPlaygroundScene();
+            }
+            break;
+        case GAME_SCENE_END:
+            {
+                drawPlaygroundScene();
             }
             break;
     }
