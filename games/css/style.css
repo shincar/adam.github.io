@@ -126,6 +126,9 @@ body {
     color: #40A310;
     text-align: right;
 }
+#content .canvas_div {
+    padding: 10px;
+}    
     
 #content p {
 	margin: 0.4em 0;
@@ -133,9 +136,11 @@ body {
 #left {
 	float: left;
 	width: 724px;
+    border-left: 1px dotted white;
+    border-top: 1px dotted white;
 	border-right: 1px dotted white;
-  border-left: 1px dotted white;
-  border-color: #40A310;
+    border-bottom: 1px dotted white;
+    border-color: #40A310;
 }
 #left h3 {
 	margin: 0.5em 0 0.3em;
