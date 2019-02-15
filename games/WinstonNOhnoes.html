@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-  <title>Adam & Alvin's Lab - Gobblet Gobblers</title>
+  <title>Adam & Alvin's Lab - Winston & Ohnoes</title>
   <link rel="stylesheet" href="css/style.css" type="text/css">
   <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
   <script>
@@ -306,8 +306,41 @@
     return bValidAction;
   };
   
+  var Button = function(text, x, y, w, h, radius) {
+    this.text = text;
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.radius = radius;
+    this.color = color(93,194,83);
+    this.text_color = color(213,251,209);
+    this.stroke_color = color(213,251,209);
+    this.stroke_weight = 5;
+    this.text_size = 36;
+  };
+  
+  Button.prototype.IsContains = function(x, y) {
+    return (x > this.x && x < this.x + this.w && 
+            y > this.y && y < this.y + this.h);
+  }
+  
+  Button.prototype.draw = function() {
+    fill(this.color);
+    stroke(this.stroke_color);
+    strokeWeight(this.stroke_weight);
+    rect(this.x, this.y, this.w, this.h, this.radius);
+    textSize(this.text_size);
+    fill(this.text_color);
+    textAlign(CENTER, TOP);
+    text(this.text, this.x + this.w / 2, this.y);
+  };
+  
   var player1 = new Player(1, "Player 1", color(213,251,209), loadImage("images/cs-winston.png"));
   var player2 = new Player(2, "Player 2", color(58,121,52), loadImage("images/cs-ohnoes.png"));
+  var start_button = new Button("Start", paddingOfBoard + 30, gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
+  var options_button = new Button("Options", maxSize - (paddingOfBoard + 30) - gridSize, gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
+  
   var playground = new PlayGround();
   
   var stepCounter = 0;
@@ -320,16 +353,9 @@
       textAlign(CENTER,CENTER);
       text("Winston & Ohnoes", 0, 0, maxSize, maxSize * 0.75); 
 
-      
       // Draw start button
-      fill(93,194,83);
-      stroke(213,251,209);
-      strokeWeight(5);
-      rect((maxSize - gridSize) / 2 , gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
-      textSize(36);
-      fill(213,251,209);
-      textAlign(CENTER,TOP);
-      text("Start", maxSize / 2, gridSize * 2 + paddingOfBoard);
+      start_button.draw();
+      options_button.draw();
       
       image(player1.image, paddingOfBoard + 50, paddingOfBoard, 100, 100);
       image(player2.image, maxSize - paddingOfBoard - 150, paddingOfBoard, 100, 100);
@@ -348,8 +374,8 @@
   var processHomeScene = function() {
       if(gameScene != GAME_SCENE_HOME) return;
       
-      if(mouseX > (maxSize - gridSize) / 2 && mouseX < (maxSize - gridSize) / 2 + gridSize &&
-         mouseY > gridSize * 2 + paddingOfBoard && mouseY < gridSize * 2.3 + paddingOfBoard) { 
+      // Check if start button clicked
+      if(start_button.IsContains(mouseX, mouseY)) { 
           resetGameData();
           
           gameScene = GAME_SCENE_PLAYGROUND;
