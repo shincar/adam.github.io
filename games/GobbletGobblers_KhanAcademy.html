@@ -12,6 +12,8 @@
   </script>
   <script src="js/processing-1.4.8.min.js"></script>
   <script type="text/processing" data-processing-target="processing-canvas">
+  /* @pjs preload="images/cs-winston.png,images/cs-ohnoes.png"; */
+  
   const GAME_SCENE_HOME = 0;
   const GAME_SCENE_PLAYGROUND = 1;
   const GAME_SCENE_END = 2;
@@ -20,8 +22,6 @@
   const TOKEN_SIZE_MEDIUM = 60;
   const TOKEN_SIZE_LARGE = 85;
     
-  /* @pjs preload="images/cs-winston.png"; */
-
   var gridSize = 150;
   var gridCount = 3;
   var paddingOfBoard = 100;
@@ -196,21 +196,25 @@
     } else {
         noStroke();
     }
-    fill(this.color);
+    noFill();
     ellipse(this.currentX, this.currentY, this.currentSize, this.currentSize);
+    if(this.image) {
+        image(this.image, this.currentX - this.currentSize / 2, this.currentY - this.currentSize / 2, this.currentSize, this.currentSize);
+    }
   };
   
   Token.prototype.IsContains = function(x, y) {
     return (Math.pow(x - this.currentX, 2) + Math.pow(y - this.currentY, 2)) < Math.pow(this.currentSize / 2, 2);
   };
   
-  var Player = function(id, name, color) {
+  var Player = function(id, name, color, image) {
     this.id = id;
     this.name = name;
     this.color = color;
-    this.tokens = [new Token(id, TOKEN_SIZE_SMALL, color), new Token(id, TOKEN_SIZE_SMALL, color),
-                   new Token(id, TOKEN_SIZE_MEDIUM, color), new Token(id, TOKEN_SIZE_MEDIUM, color),
-                   new Token(id, TOKEN_SIZE_LARGE, color), new Token(id, TOKEN_SIZE_LARGE, color)];
+    this.image = image;
+    this.tokens = [new Token(id, TOKEN_SIZE_SMALL, color, image), new Token(id, TOKEN_SIZE_SMALL, color, image),
+                   new Token(id, TOKEN_SIZE_MEDIUM, color, image), new Token(id, TOKEN_SIZE_MEDIUM, color, image),
+                   new Token(id, TOKEN_SIZE_LARGE, color, image), new Token(id, TOKEN_SIZE_LARGE, color, image)];
   };
   
   Player.prototype.reset = function() {
@@ -302,8 +306,8 @@
     return bValidAction;
   };
   
-  var player1 = new Player(1, "Player 1", color(213,251,209));
-  var player2 = new Player(2, "Player 2", color(58,121,52));
+  var player1 = new Player(1, "Player 1", color(213,251,209), loadImage("images/cs-winston.png"));
+  var player2 = new Player(2, "Player 2", color(58,121,52), loadImage("images/cs-ohnoes.png"));
   var playground = new PlayGround();
   
   var stepCounter = 0;
@@ -326,11 +330,9 @@
       fill(213,251,209);
       textAlign(CENTER,TOP);
       text("Start", maxSize / 2, gridSize * 2 + paddingOfBoard);
-
-      PImage b;
-      b = loadImage("images/cs-winston.png");
-
-      image(b, 100, 100, 100, 100);
+      
+      image(player1.image, paddingOfBoard + 50, paddingOfBoard, 100, 100);
+      image(player2.image, maxSize - paddingOfBoard - 150, paddingOfBoard, 100, 100);
   };
   
   var resetGameData = function() {
