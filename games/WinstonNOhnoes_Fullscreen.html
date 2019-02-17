@@ -51,7 +51,8 @@
   var gridCount = 3;
   var paddingOfBoard = 100;
   var maxSize = gridSize * gridCount + paddingOfBoard * 2;
-  
+  var paddingExtraH = (window.innerWidth - maxSize) / 2;
+  var paddingExtraV = (window.innerHeight - maxSize) / 2;
   size(window.innerWidth, window.innerHeight);
   
   var Grid = function(x, y, size) {
@@ -90,7 +91,7 @@
     
     for(var row = 0; row < gridCount; row++) {
         for(var col = 0; col < gridCount; col++) {
-            this.gridList.push(new Grid(this.padding + (col + 0.5) * this.grid_size, this.padding + (row + 0.5) * this.grid_size, this.grid_size));
+            this.gridList.push(new Grid(this.padding + (col + 0.5) * this.grid_size + paddingExtraH, this.padding + (row + 0.5) * this.grid_size + paddingExtraV, this.grid_size));
         }
     }
   };
@@ -363,8 +364,8 @@
   
   var player1 = new Player(1, "Player 1", color(213,251,209), loadImage("images/cs-winston.png"));
   var player2 = new Player(2, "Player 2", color(58,121,52), loadImage("images/cs-ohnoes.png"));
-  var start_button = new Button("Start", paddingOfBoard + 30, gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
-  var options_button = new Button("Options", maxSize - (paddingOfBoard + 30) - gridSize, gridSize * 2 + paddingOfBoard, gridSize, gridSize * 0.3, gridSize / 10);
+  var start_button = new Button("Start", paddingOfBoard + 30 + paddingExtraH, gridSize * 2 + paddingOfBoard + paddingExtraV, gridSize, gridSize * 0.3, gridSize / 10);
+  var options_button = new Button("Options", maxSize + paddingExtraH - (paddingOfBoard + 30) - gridSize, gridSize * 2 + paddingOfBoard + paddingExtraV, gridSize, gridSize * 0.3, gridSize / 10);
   
   var playground = new PlayGround();
   
@@ -376,14 +377,14 @@
       fill(213,251,209);
       textSize(60);
       textAlign(CENTER,CENTER);
-      text("Winston & Ohnoes", 0, 0, maxSize, maxSize * 0.75); 
+      text("Winston & Ohnoes", 0, 0, maxSize + 2 * paddingExtraH, maxSize * 0.75 + 2 * paddingExtraV); 
 
       // Draw start button
       start_button.draw();
       options_button.draw();
       
-      image(player1.image, paddingOfBoard + 50, paddingOfBoard, 100, 100);
-      image(player2.image, maxSize - paddingOfBoard - 150, paddingOfBoard, 100, 100);
+      image(player1.image, paddingOfBoard + 50 + paddingExtraH, paddingOfBoard + paddingExtraV, 100, 100);
+      image(player2.image, maxSize - paddingOfBoard - 150 + paddingExtraH, paddingOfBoard + paddingExtraV, 100, 100);
   };
   
   var resetGameData = function() {
@@ -412,8 +413,8 @@
       stroke(213,251,209);
       strokeWeight(5);
       for(var i = 0; i <= gridCount; i++) {
-          line(paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard, i * gridSize + paddingOfBoard);
-          line(i * gridSize + paddingOfBoard, paddingOfBoard, i * gridSize + paddingOfBoard, gridSize * gridCount + paddingOfBoard);
+          line(paddingOfBoard + paddingExtraH, i * gridSize + paddingOfBoard + paddingExtraV, gridSize * gridCount + paddingOfBoard + paddingExtraH, i * gridSize + paddingOfBoard + paddingExtraV);
+          line(i * gridSize + paddingOfBoard + paddingExtraH, paddingOfBoard + paddingExtraV, i * gridSize + paddingOfBoard + paddingExtraH, gridSize * gridCount + paddingOfBoard + paddingExtraV);
       }
       
       var currentPlayer = players[stepCounter % 2];
@@ -421,12 +422,12 @@
       stroke(currentPlayer.color);
       strokeWeight(5);
       textSize(24);
-      text(currentPlayer.name, 50, 10);
+      text(currentPlayer.name, 50 + paddingExtraH, 10 + paddingExtraV);
       
       // Draw player token here
       var token_adjust = 0;
-      var current_token_x = 150 - currentPlayer.tokens[0].size / 2;
-      var current_token_y = 50;
+      var current_token_x = 150 - currentPlayer.tokens[0].size / 2 + paddingExtraH;
+      var current_token_y = 50 + paddingExtraV;
       
       currentPlayer.tokens.forEach(function(token) {
           if(!token.used) {
@@ -450,18 +451,18 @@
         textAlign(CENTER, CENTER);
         players.forEach(function(player) {
             if(player.id === playground.winner) {
-              text(player.name + " Wins!", 0, 0, maxSize, maxSize * 0.66);
+              text(player.name + " Wins!", 0, 0, maxSize + 2 * paddingExtraH, maxSize * 0.66 + 2 * paddingExtraV);
             }
         });
       }
       
       noStroke();
       fill(93,194,83);
-      rect(0, maxSize - paddingOfBoard + 5, maxSize, maxSize);
+      rect(paddingExtraH, maxSize - paddingOfBoard + 5 + paddingExtraV, maxSize, maxSize);
       currentPlayer = players[stepCounter % 2];
-      image(currentPlayer.image, image_left, maxSize - 80, 80, 80);
+      image(currentPlayer.image, image_left, maxSize - 80 + paddingExtraV, 80, 80);
       image_left = image_left + image_step;
-      if( (image_left + 80) > maxSize || image_left < 0) {
+      if( (image_left + 80) > maxSize + paddingExtraH || image_left < paddingExtraH) {
           image_step = image_step * (-1);
       }
   };
@@ -501,7 +502,7 @@
   };
 
   var gameScene = GAME_SCENE_HOME;
-  var image_left = 0;
+  var image_left = paddingExtraH;
   var image_step = 2;
   
   void draw() {
