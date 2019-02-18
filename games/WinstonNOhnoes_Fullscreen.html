@@ -52,10 +52,11 @@
   
   var gridSize = 160;
   var gridCount = 3;
-  var paddingOfBoard = 120;
-  var maxSize = gridSize * gridCount + paddingOfBoard * 2;
-  var paddingExtraH = (window.innerWidth - maxSize) / 2;
-  var paddingExtraV = (window.innerHeight - maxSize) / 2;
+  var paddingOfBoardV = 120;
+  var paddingOfBoardH = 120;
+  var maxSizeH = window.innerWidth;
+  var maxSizeV = window.innerHeight;
+  
   var token_size_small = 40;
   var token_size_medium = 70;
   var token_size_large = 100;
@@ -66,23 +67,25 @@
   var OptimizeSize = function() {
     if( window.innerWidth > window.innerHeight ) {
         player_info_type = PLAYER_INFO_TYPE_LEFT;
-        gridSize = window.innerHeight * 2 / 3 / gridCount;
+        gridSize = (window.innerHeight - 100) / 3;
+        paddingOfBoardV = 50;
+        paddingOfBoardH = (window.innerWidth - gridSize * 3 ) / 2;
     } else {
         player_info_type = PLAYER_INFO_TYPE_TOP;
         gridSize = window.innerWidth * 2 / 3 / gridCount;
+        gridSize = (window.innerWidth - 100) / 3;
+        paddingOfBoardV = (window.innerHeight - gridSize * 3) / 2;
+        paddingOfBoardH = 50;
+        
     }
-    paddingOfBoard = gridSize * 3 / 4;
-    maxSize = gridSize * gridCount + paddingOfBoard * 2;
-    paddingExtraH = (window.innerWidth - maxSize) / 2;
-    paddingExtraV = (window.innerHeight - maxSize) / 2;
     
-    token_size_small = paddingOfBoard / 3;
-    token_size_medium = paddingOfBoard * 7 / 12;
-    token_size_large = paddingOfBoard * 5 / 6;
+    token_size_small = gridSize * 0.3;
+    token_size_medium = gridSize * 0.55;
+    token_size_large = gridSize * 0.7;
   };
   
   OptimizeSize();
-  size(window.innerWidth, window.innerHeight);
+  size(maxSizeH, maxSizeV);
   
   var Grid = function(x, y, size) {
         this.x = x;
@@ -113,14 +116,13 @@
   var PlayGround = function() {
     this.grid_count = gridCount * gridCount;
     this.grid_size = gridSize;
-    this.padding = paddingOfBoard;
     this.gridList = [];
     this.lines = [];
     this.winner = 0;
     
     for(var row = 0; row < gridCount; row++) {
         for(var col = 0; col < gridCount; col++) {
-            this.gridList.push(new Grid(this.padding + (col + 0.5) * this.grid_size + paddingExtraH, this.padding + (row + 0.5) * this.grid_size + paddingExtraV, this.grid_size));
+            this.gridList.push(new Grid(paddingOfBoardH + (col + 0.5) * this.grid_size, paddingOfBoardV + (row + 0.5) * this.grid_size, this.grid_size));
         }
     }
   };
@@ -393,8 +395,8 @@
   
   var player1 = new Player(1, "Player 1", color(213,251,209), loadImage("images/cs-winston.png"));
   var player2 = new Player(2, "Player 2", color(58,121,52), loadImage("images/cs-ohnoes.png"));
-  var start_button = new Button("Start", paddingOfBoard + 30 + paddingExtraH, gridSize * 2 + paddingOfBoard + paddingExtraV, gridSize, gridSize * 0.3, gridSize / 10);
-  var options_button = new Button("Back", maxSize + paddingExtraH - (paddingOfBoard + 30) - gridSize, gridSize * 2 + paddingOfBoard + paddingExtraV, gridSize, gridSize * 0.3, gridSize / 10);
+  var start_button = new Button("Start", paddingOfBoardH + 30, gridSize * 2 + paddingOfBoardV, gridSize, gridSize * 0.3, gridSize / 10);
+  var options_button = new Button("Back", maxSizeH - paddingOfBoardH - 30 - gridSize, gridSize * 2 + paddingOfBoardV, gridSize, gridSize * 0.3, gridSize / 10);
   
   var playground = new PlayGround();
   
@@ -406,14 +408,14 @@
       fill(213,251,209);
       textSize(60 * gridSize / 160);
       textAlign(CENTER,CENTER);
-      text("Winston & Ohnoes", 0, 0, maxSize + 2 * paddingExtraH, maxSize * 0.75 + 2 * paddingExtraV); 
+      text("Winston & Ohnoes", 0, 0, maxSizeH, maxSizeV * 0.75); 
 
       // Draw start button
       start_button.draw();
       options_button.draw();
       
-      image(player1.image, paddingOfBoard + 50 + paddingExtraH, paddingOfBoard + paddingExtraV, 100, 100);
-      image(player2.image, maxSize - paddingOfBoard - 150 + paddingExtraH, paddingOfBoard + paddingExtraV, 100, 100);
+      image(player1.image, paddingOfBoardH + 50, paddingOfBoardV, 100, 100);
+      image(player2.image, maxSizeH - paddingOfBoardH - 150, paddingOfBoardV, 100, 100);
   };
   
   var resetGameData = function() {
@@ -453,18 +455,18 @@
     var current_token_y;
     
     if( player_info_type === PLAYER_INFO_TYPE_LEFT ) {
-        player_text_x = paddingExtraH;
-        player_text_y = paddingOfBoard + 5 + paddingExtraV;
+        player_text_x = 70;
+        player_text_y = 5;
         
-        current_token_x = player_text_x + paddingOfBoard - player.tokens[0].size - 20;
-        current_token_y = player_text_y + 10;
+        current_token_x = player_text_x + paddingOfBoardH / 2 - player.tokens[0].size - 20;
+        current_token_y = player_text_y + + player.tokens[0].size / 2 + 10;
         
     } else {
-        player_text_x = paddingExtraH + paddingOfBoard;
-        player_text_y = paddingExtraV + 10;
+        player_text_x = paddingOfBoardH;
+        player_text_y = 10;
         
-        current_token_x = player_text_x + 10;
-        current_token_y = player_text_y + paddingOfBoard - player.tokens[0].size - 20;
+        current_token_x = 10;
+        current_token_y = player_text_y + paddingOfBoardV - player.tokens[0].size - 20;
     }
     
     text(player.name, player_text_x, player_text_y);
@@ -493,8 +495,8 @@
       stroke(213,251,209);
       strokeWeight(5);
       for(var i = 0; i <= gridCount; i++) {
-          line(paddingOfBoard + paddingExtraH, i * gridSize + paddingOfBoard + paddingExtraV, gridSize * gridCount + paddingOfBoard + paddingExtraH, i * gridSize + paddingOfBoard + paddingExtraV);
-          line(i * gridSize + paddingOfBoard + paddingExtraH, paddingOfBoard + paddingExtraV, i * gridSize + paddingOfBoard + paddingExtraH, gridSize * gridCount + paddingOfBoard + paddingExtraV);
+          line(paddingOfBoardH, i * gridSize + paddingOfBoardV, gridSize * gridCount + paddingOfBoardH, i * gridSize + paddingOfBoardV);
+          line(i * gridSize + paddingOfBoardH, paddingOfBoardV, i * gridSize + paddingOfBoardH, gridSize * gridCount + paddingOfBoardV);
       }
       
       var currentPlayer = players[stepCounter % 2];
@@ -514,11 +516,12 @@
         textAlign(CENTER, CENTER);
         players.forEach(function(player) {
             if(player.id === playground.winner) {
-              text(player.name + " Wins!", 0, 0, maxSize + 2 * paddingExtraH, maxSize * 0.66 + 2 * paddingExtraV);
+              text(player.name + " Wins!", 0, 0, maxSizeH, maxSizeV * 0.66);
             }
         });
       }
       
+      /*
       noStroke();
       fill(93,194,83);
       rect(paddingExtraH, maxSize - paddingOfBoard + 5 + paddingExtraV, maxSize, maxSize);
@@ -528,6 +531,7 @@
       if( (image_left + 80) > maxSize + paddingExtraH || image_left < paddingExtraH) {
           image_step = image_step * (-1);
       }
+      */
   };
   
   var processPlaygroundScene = function() {
@@ -565,8 +569,8 @@
   };
 
   var gameScene = GAME_SCENE_HOME;
-  var image_left = paddingExtraH;
-  var image_step = 2;
+  //var image_left = paddingExtraH;
+  //var image_step = 2;
   
   void draw() {
     switch (gameScene) {
