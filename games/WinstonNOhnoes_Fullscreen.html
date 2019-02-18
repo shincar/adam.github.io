@@ -441,6 +441,53 @@
       }
   };
   
+  var drawPlayerInfo = function (player) {
+    fill(player.color);
+    stroke(player.color);
+    strokeWeight(5);
+    textSize(24 * gridSize / 160);
+    
+    var player_text_x;
+    var player_text_y;
+    var current_token_x;
+    var current_token_y;
+    
+    if( player_info_type === PLAYER_INFO_TYPE_LEFT ) {
+        player_text_x = paddingExtraH;
+        player_text_y = paddingOfBoard + 5 + paddingExtraV;
+        
+        current_token_x = player_text_x + paddingOfBoard - player.tokens[0].size - 20;
+        current_token_y = player_text_y + 10;
+        
+    } else {
+        player_text_x = paddingExtraH + paddingOfBoard;
+        player_text_y = paddingExtraV + 10;
+        
+        current_token_x = player_text_x + 10;
+        current_token_y = player_text_y + paddingOfBoard - player.tokens[0].size - 20;
+    }
+    
+    text(player.name, player_text_x, player_text_y);
+
+    // Draw player token here
+    player.tokens.forEach(function(token) {
+      if(!token.used) {
+        if( player_info_type === PLAYER_INFO_TYPE_LEFT ) {
+            current_token_y = current_token_y + token.size / 2;
+        } else {
+            current_token_x = current_token_x + token.size / 2;
+        }
+        token.setTokenInfo(current_token_x, current_token_y, token.size);
+        token.draw();
+        if( player_info_type === PLAYER_INFO_TYPE_LEFT ) {
+            current_token_y = current_token_y + token.size / 2 + 10;
+        } else {
+            current_token_x = current_token_x + token.size / 2 + 10;
+        }
+      }
+    });
+  };
+  
   var drawPlaygroundScene = function() {
       background(93,194,83);
       stroke(213,251,209);
@@ -451,32 +498,15 @@
       }
       
       var currentPlayer = players[stepCounter % 2];
-      fill(currentPlayer.color);
-      stroke(currentPlayer.color);
-      strokeWeight(5);
-      textSize(24 * gridSize / 160);
-      text(currentPlayer.name, 50 + paddingExtraH, 10 + paddingExtraV);
       
-      // Draw player token here
-      var token_adjust = 0;
-      var current_token_x = 150 - currentPlayer.tokens[0].size / 2 + paddingExtraH;
-      var current_token_y = 50 + paddingExtraV;
-      
-      currentPlayer.tokens.forEach(function(token) {
-          if(!token.used) {
-            current_token_x = current_token_x + token.size / 2;
-            token.setTokenInfo(current_token_x, current_token_y, token.size);
-            token.draw();
-            current_token_x = current_token_x + token.size / 2 +  10;
-          }
-      });
-
       // Draw the lastest token in the grid here
       playground.gridList.forEach(function(grid) {
         if(grid.token_list.length > 0) {
             grid.token_list[grid.token_list.length - 1].draw();
         }
       });
+      
+      drawPlayerInfo(currentPlayer);
 
       if(playground.winner != 0) {
         fill(2, 73, 19);
