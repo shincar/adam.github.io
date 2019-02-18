@@ -47,12 +47,41 @@
   const TOKEN_SIZE_MEDIUM = 70;
   const TOKEN_SIZE_LARGE = 100;
   
+  const PLAYER_INFO_TYPE_LEFT = 0;
+  const PLAYER_INFO_TYPE_TOP = 1;
+  
   var gridSize = 160;
   var gridCount = 3;
   var paddingOfBoard = 120;
   var maxSize = gridSize * gridCount + paddingOfBoard * 2;
   var paddingExtraH = (window.innerWidth - maxSize) / 2;
   var paddingExtraV = (window.innerHeight - maxSize) / 2;
+  var token_size_small = 40;
+  var token_size_medium = 70;
+  var token_size_large = 100;
+  // If width > height, type = 0; means we put our player info at left of playground.
+  // If width < height, type = 1; means we put our player info at to of playground;
+  var player_info_type = PLAYER_INFO_TYPE_LEFT;
+  
+  var OptimizeSize = function() {
+    if( window.innerWidth > window.innerHeight ) {
+        player_info_type = PLAYER_INFO_TYPE_LEFT;
+        gridSize = window.innerHeight * 2 / 3 / gridCount;
+    } else {
+        player_info_type = PLAYER_INFO_TYPE_TOP;
+        gridSize = window.innerWidth * 2 / 3 / gridCount;
+    }
+    paddingOfBoard = gridSize * 3 / 4;
+    maxSize = gridSize * gridCount + paddingOfBoard * 2;
+    paddingExtraH = (window.innerWidth - maxSize) / 2;
+    paddingExtraV = (window.innerHeight - maxSize) / 2;
+    
+    token_size_small = paddingOfBoard / 3;
+    token_size_medium = paddingOfBoard * 7 / 12;
+    token_size_large = paddingOfBoard * 5 / 6;
+  };
+  
+  OptimizeSize();
   size(window.innerWidth, window.innerHeight);
   
   var Grid = function(x, y, size) {
@@ -238,9 +267,9 @@
     this.name = name;
     this.color = color;
     this.image = image;
-    this.tokens = [new Token(id, TOKEN_SIZE_SMALL, color, image), new Token(id, TOKEN_SIZE_SMALL, color, image),
-                   new Token(id, TOKEN_SIZE_MEDIUM, color, image), new Token(id, TOKEN_SIZE_MEDIUM, color, image),
-                   new Token(id, TOKEN_SIZE_LARGE, color, image), new Token(id, TOKEN_SIZE_LARGE, color, image)];
+    this.tokens = [new Token(id, token_size_small, color, image), new Token(id, token_size_small, color, image),
+                   new Token(id, token_size_medium, color, image), new Token(id, token_size_medium, color, image),
+                   new Token(id, token_size_large, color, image), new Token(id, token_size_large, color, image)];
   };
   
   Player.prototype.reset = function() {
@@ -343,7 +372,7 @@
     this.text_color = color(213,251,209);
     this.stroke_color = color(213,251,209);
     this.stroke_weight = 5;
-    this.text_size = 36;
+    this.text_size = 36 * gridSize / 160;
   };
   
   Button.prototype.IsContains = function(x, y) {
@@ -375,7 +404,7 @@
   var drawHomeScene = function() {
       background(58,121,52);
       fill(213,251,209);
-      textSize(60);
+      textSize(60 * gridSize / 160);
       textAlign(CENTER,CENTER);
       text("Winston & Ohnoes", 0, 0, maxSize + 2 * paddingExtraH, maxSize * 0.75 + 2 * paddingExtraV); 
 
@@ -425,7 +454,7 @@
       fill(currentPlayer.color);
       stroke(currentPlayer.color);
       strokeWeight(5);
-      textSize(24);
+      textSize(24 * gridSize / 160);
       text(currentPlayer.name, 50 + paddingExtraH, 10 + paddingExtraV);
       
       // Draw player token here
@@ -451,7 +480,7 @@
 
       if(playground.winner != 0) {
         fill(2, 73, 19);
-        textSize(60);
+        textSize(60 * gridSize / 160);
         textAlign(CENTER, CENTER);
         players.forEach(function(player) {
             if(player.id === playground.winner) {
